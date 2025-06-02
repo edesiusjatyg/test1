@@ -193,7 +193,7 @@ export default function CompanyTransactionsPage() {
       form.reset({
         type: transaction.type,
         category: transaction.category,
-        amount: transaction.amount.toString(),
+        amount: transaction.amount,
         description: transaction.description,
         paymentMethod: transaction.paymentMethod || "",
         transactionDate: new Date(transaction.transactionDate),
