@@ -108,7 +108,7 @@ export default function CampaignsPage() {
       description: "",
       type: "DIGITAL",
       status: "DRAFT",
-      budget: "",
+      budget: 0,
       targetAudience: "",
       goals: "",
     },
