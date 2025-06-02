@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdMembers      Member[]            @relation("CreatedByUser")
+  memberTransactions  MemberTransaction[] @relation("CreatedByUser")
+  companyTransactions CompanyTransaction[] @relation("CreatedByUser")
+  campaigns           Campaign[]          @relation("CreatedByUser")
+  campaignLogs        CampaignLog[]       @relation("CreatedByUser")
+  activityLogs        ActivityLog[]       @relation("LoggedUser")
+
+  @@map("users")
+}
+
+model Member {
+  id          String   @id @default(cuid())
+  memberCode  String   @unique
+  name        String
+  email       String?  @unique
+  phone       String?
+  address     String?
+  birthDate   DateTime?
+  gender      Gender?
+  joinDate    DateTime @default(now())
+  isActive    Boolean  @default(true)
+  emergencyContact String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  createdBy           User                @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById         String
+  memberTransactions  MemberTransaction[]
+  memberAbsences      MemberAbsence[]
+
+  @@map("members")
+}
+
+model MemberTransaction {
+  id              String            @id @default(cuid())
+  transactionCode String            @unique
+  member          Member            @relation(fields: [memberId], references: [id])
+  memberId        String
+  type            TransactionType
+  amount          Decimal           @db.Decimal(10, 2)
+  description     String?
+  paymentMethod   PaymentMethod
+  status          TransactionStatus @default(PENDING)
+  dueDate         DateTime?
+  paidDate        DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("member_transactions")
+}
+
+model MemberAbsence {
+  id        String      @id @default(cuid())
+  member    Member      @relation(fields: [memberId], references: [id])
+  memberId  String
+  date      DateTime
+  reason    String?
+  type      AbsenceType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("member_absences")
+}
+
+model CompanyTransaction {
+  id              String            @id @default(cuid())
+  transactionCode String            @unique
+  type            CompanyTransactionType
+  category        String
+  amount          Decimal           @db.Decimal(10, 2)
+  description     String
+  paymentMethod   PaymentMethod?
+  status          TransactionStatus @default(COMPLETED)
+  transactionDate DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("company_transactions")
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  type        CampaignType
+  status      CampaignStatus @default(ACTIVE)
+  budget      Decimal?       @db.Decimal(10, 2)
+  startDate   DateTime
+  endDate     DateTime?
+  targetAudience String?
+  goals       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  createdBy     User          @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById   String
+  campaignLogs  CampaignLog[]
+
+  @@map("campaigns")
+}
+
+model CampaignLog {
+  id          String   @id @default(cuid())
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+  campaignId  String
+  activity    String
+  description String?
+  metrics     Json?    // Store metrics like reach, engagement, etc.
+  logDate     DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  createdBy   User   @relation("CreatedByUser", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("campaign_logs")
+}
+
+model ActivityLog {
+  id          String     @id @default(cuid())
+  user        User       @relation("LoggedUser", fields: [userId], references: [id])
+  userId      String
+  role        Role
+  action      ActionType     // e.g., "CREATE_MEMBER", "UPDATE_TRANSACTION"
+  entity      String     // e.g., "Member", "Transaction"
+  entityId    String?    // ID of the affected entity
+  details     Json?      // Additional details about the action
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime   @default(now())
+
+  @@map("activity_logs")
+}
+
+// Enums
+enum Role {
+  FRONT_OFFICE
+  ACCOUNTING
+  MARKETING
+  SUPERVISOR
+  OWNER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum TransactionType {
+  MEMBERSHIP_FEE
+  PERSONAL_TRAINING
+  EQUIPMENT_RENTAL
+  MERCHANDISE
+  OTHER
+}
+
+enum CompanyTransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  DIGITAL_WALLET
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum ActionType {
+  CREATE_MEMBER
+  UPDATE_MEMBER
+  DELETE_MEMBER
+  CREATE_TRANSACTION
+  UPDATE_TRANSACTION
+  DELETE_TRANSACTION
+  CREATE_CAMPAIGN
+  UPDATE_CAMPAIGN
+  DELETE_CAMPAIGN
+  CREATE_MK_LOG
+  UPDATE_MK_LOG
+  DELETE_MK_LOG
+}
+
+enum AbsenceType {
+  SICK
+  VACATION
+  PERSONAL
+  OTHER
+}
+
+enum CampaignType {
+  DIGITAL
+  PRINT
+  EVENT
+  SOCIAL_MEDIA
+  EMAIL
+  OTHER
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
