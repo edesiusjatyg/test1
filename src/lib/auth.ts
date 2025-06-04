@@ -5,6 +5,9 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+const isDev = process.env.NODE_ENV === 'development'
+const skipAuth = process.env.SKIP_AUTH === 'true'
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -15,6 +18,16 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        // Mock user in development
+        if (isDev && skipAuth) {
+          return {
+            id: "1",
+            email: "owner@gym.com",
+            name: "Demo Owner",
+            role: "OWNER",
+          }
+        }
+
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -52,12 +65,39 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Mock JWT token in development
+      if (isDev && skipAuth) {
+        return {
+          sub: "1",
+          name: "Demo Owner",
+          email: "owner@gym.com",
+          role: "OWNER",
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60),
+        }
+      }
+
       if (user) {
         token.role = user.role
       }
       return token
     },
     async session({ session, token }) {
+      console.log("Session callback - isDev:", isDev, "skipAuth:", skipAuth)
+      
+      // Mock session in development
+      if (isDev && skipAuth) {
+        return {
+          user: {
+            id: "1",
+            name: "Demo Owner",
+            email: "owner@gym.com",
+            role: "OWNER",
+          },
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      }
+
       if (token) {
         session.user.id = token.sub!
         session.user.role = token.role as string

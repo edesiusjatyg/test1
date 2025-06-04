@@ -7,7 +7,7 @@ import { hasPermission } from "@/lib/permissions"
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,7 +19,7 @@ export async function PUT(
     const body = await req.json()
 
     const transaction = await prisma.memberTransaction.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         memberId: body.memberId,
         type: body.type,
@@ -59,7 +59,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -69,7 +69,7 @@ export async function DELETE(
     }
 
     const transaction = await prisma.memberTransaction.delete({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     // Log activity
@@ -79,7 +79,7 @@ export async function DELETE(
         role: session.user.role as any,
         action: 'DELETE_TRANSACTION',
         entity: 'MemberTransaction',
-        entityId: params.id,
+        entityId: (await params).id,
         details: { 
           transactionCode: transaction.transactionCode,
           amount: transaction.amount
@@ -97,7 +97,7 @@ export async function DELETE(
 // src/app/api/member-transactions/[id]/mark-paid/route.ts
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -107,7 +107,7 @@ export async function PATCH(
     }
 
     const transaction = await prisma.memberTransaction.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         status: "COMPLETED",
         paidDate: new Date()

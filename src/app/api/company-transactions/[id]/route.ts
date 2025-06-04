@@ -7,7 +7,7 @@ import { hasPermission } from "@/lib/permissions"
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,7 +19,7 @@ export async function PUT(
     const body = await req.json()
 
     const transaction = await prisma.companyTransaction.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         type: body.type,
         category: body.category,
@@ -56,7 +56,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -66,7 +66,7 @@ export async function DELETE(
     }
 
     const transaction = await prisma.companyTransaction.delete({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     // Log activity
@@ -76,7 +76,7 @@ export async function DELETE(
         role: session.user.role as any,
         action: 'DELETE_TRANSACTION',
         entity: 'CompanyTransaction',
-        entityId: params.id,
+        entityId: (await params).id,
         details: { 
           transactionCode: transaction.transactionCode,
           type: transaction.type,

@@ -128,6 +128,8 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, role, isLoading } = useAuth()
+  // Add this right after the useAuth line for debugging
+console.log("Debug - useAuth data:", { user, role, isLoading })
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = React.useState(false)
   const [expandedCategories, setExpandedCategories] = React.useState<string[]>([])

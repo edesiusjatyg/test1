@@ -6,7 +6,7 @@ import { hasPermission } from "@/lib/permissions"
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,7 +18,7 @@ export async function PUT(
     const body = await req.json()
 
     const member = await prisma.member.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         ...body,
         birthDate: body.birthDate ? new Date(body.birthDate) : undefined
@@ -51,7 +51,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -61,7 +61,7 @@ export async function DELETE(
     }
 
     const member = await prisma.member.delete({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     // Log activity
@@ -71,7 +71,7 @@ export async function DELETE(
         role: session.user.role as any,
         action: 'DELETE_MEMBER',
         entity: 'Member',
-        entityId: params.id,
+        entityId: (await params).id,
         details: { memberCode: member.memberCode, name: member.name }
       }
     })
