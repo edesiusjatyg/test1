@@ -60,7 +60,7 @@ interface CompanyTransaction {
 const companyTransactionSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE"]),
   category: z.string().min(1, "Category is required"),
-  amount: z.string().min(1, "Amount is required").transform((val) => parseFloat(val)),
+  amount: z.number(),
   description: z.string().min(1, "Description is required"),
   paymentMethod: z.string().optional(),
   transactionDate: z.date({
@@ -89,7 +89,7 @@ export default function CompanyTransactionsPage() {
     defaultValues: {
       type: "INCOME",
       category: "",
-      amount: "",
+      amount: 0,
       description: "",
       paymentMethod: "",
       transactionDate: new Date(),

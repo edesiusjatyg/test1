@@ -65,7 +65,7 @@ const campaignSchema = z.object({
   description: z.string().optional(),
   type: z.enum(["DIGITAL", "PRINT", "EVENT", "SOCIAL_MEDIA", "EMAIL", "OTHER"]),
   status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "CANCELLED"]),
-  budget: z.string().optional().transform((val) => val ? parseFloat(val) : undefined),
+  budget: z.number().optional(),
   startDate: z.date({
     required_error: "Start date is required",
   }),
@@ -212,7 +212,7 @@ export default function CampaignsPage() {
         description: campaign.description || "",
         type: campaign.type,
         status: campaign.status,
-        budget: campaign.budget?.toString() || "",
+        budget: campaign.budget || 0,
         startDate: new Date(campaign.startDate),
         endDate: campaign.endDate ? new Date(campaign.endDate) : undefined,
         targetAudience: campaign.targetAudience || "",

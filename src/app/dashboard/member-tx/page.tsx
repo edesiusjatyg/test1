@@ -71,12 +71,12 @@ interface MemberTransaction {
 const transactionSchema = z.object({
   memberId: z.string().min(1, "Please select a member"),
   type: z.enum(["MEMBERSHIP_FEE", "PERSONAL_TRAINING", "SUPPLEMENTS", "EQUIPMENT_RENTAL", "OTHER"]),
-  amount: z.string().min(1, "Amount is required").transform((val) => parseFloat(val)),
-  description: z.string().optional(),
+  status: z.enum(["PENDING", "PAID", "OVERDUE", "CANCELLED"]),
+  amount: z.number().min(1, "Amount is required"),
   dueDate: z.date({
     required_error: "Due date is required",
   }),
-  status: z.enum(["PENDING", "PAID", "OVERDUE", "CANCELLED"]).default("PENDING"),
+  description: z.string().optional(),
 })
 
 type TransactionFormData = z.infer<typeof transactionSchema>
@@ -105,16 +105,7 @@ export default function MemberTransactionsPage() {
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [editingTransaction, setEditingTransaction] = React.useState<MemberTransaction | null>(null)
 
-  const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      memberId: "",
-      type: "MEMBERSHIP_FEE",
-      amount: "",
-      description: "",
-      status: "PENDING",
-    },
-  })
+  const form = useForm<TransactionFormData>({ resolver: zodResolver(transactionSchema) })
 
   // Load transactions and members
   React.useEffect(() => {
@@ -248,7 +239,7 @@ export default function MemberTransactionsPage() {
       form.reset({
         memberId: transaction.memberId,
         type: transaction.type,
-        amount: transaction.amount.toString(),
+        amount: transaction.amount,
         description: transaction.description || "",
         dueDate: new Date(transaction.dueDate),
         status: transaction.status,

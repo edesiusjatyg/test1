@@ -109,7 +109,7 @@ export async function PATCH(
     const transaction = await prisma.memberTransaction.update({
       where: { id: params.id },
       data: {
-        status: 'PAID',
+        status: "COMPLETED",
         paidDate: new Date()
       },
       include: {

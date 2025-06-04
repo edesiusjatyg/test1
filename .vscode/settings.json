@@ -1,15 +1,15 @@
 {
     "files.exclude": {
-        "node_modules": true,
-        ".gitignore": true,
-        ".vscode": true,
-        "tsconfig.json": true,
-        "README.md": true,
-        "package.json": true,
-        "postcss.config.mjs": true,
-        "pnpm-lock.yaml": true,
-        "next.config.ts": true,
-        "next-env.d.ts": true,
-        "components.json": true
+        "node_modules": false,
+        ".gitignore": false,
+        ".vscode": false,
+        "tsconfig.json": false,
+        "README.md": false,
+        "package.json": false,
+        "postcss.config.mjs": false,
+        "pnpm-lock.yaml": false,
+        "next.config.ts": false,
+        "next-env.d.ts": false,
+        "components.json": false
     }
 }
