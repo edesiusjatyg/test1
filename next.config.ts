@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  webpack(config) {
-    config.externals = {
-      ...config.externals,
-      '@prisma/client': 'commonjs @prisma/client',
-    };
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        '@prisma/client': false,
+      };
+    }
     return config;
   },
 };
