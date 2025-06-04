@@ -20,6 +20,17 @@ export async function GET(req: NextRequest) {
           role: "OWNER"
         }
       }
+      
+      return NextResponse.json({
+        totalMembers: 150,
+        activeMembers: 142,
+        todayCheckIns: 23,
+        monthlyRevenue: 15750.00,
+        pendingPayments: 8,
+        activeCampaigns: 3,
+        conversionRate: 12.5,
+        upcomingEvents: 3
+      })
     } else {
       session = await getServerSession(authOptions)
     }
