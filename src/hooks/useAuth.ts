@@ -4,14 +4,13 @@
 import { useSession } from "next-auth/react"
 import { hasPermission, canWrite, canRead, type Role, type Permission } from "@/lib/permissions"
 
-const isDev = process.env.NODE_ENV === 'development'
 const skipAuth = process.env.NEXT_PUBLIC_SKIP_AUTH === 'true'
 
 export function useAuth() {
   const { data: session, status } = useSession()
 
   // Mock session in development
-  if (isDev && skipAuth) {
+  if (skipAuth) {
     console.log("Using mock auth data")
     const mockUser = {
       id: "1",
